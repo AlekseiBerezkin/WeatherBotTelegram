@@ -4,6 +4,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Telegram.Bot;
+using WeatherBotTelegramm.Forecast;
 
 namespace WeatherBotTelegramm
 {
@@ -70,19 +71,23 @@ namespace WeatherBotTelegramm
             try
             {
                 await bot.SetWebhookAsync("");
+
                 while (flag_exit)
                 {
-                    var updates = await bot.GetUpdatesAsync(offset, timeout);
+                    var updates = await bot.GetUpdatesAsync(offset, timeout); 
                     //Console.WriteLine(offset);
                     foreach (var update in updates)
                     {
                         var message = update.Message;
 
                         string[] command = message.Text.Split(" ");
+                        
 
-                        switch(command[0])
+
+                        switch (command[0])
                         {
                             case "Погода":
+                                
                                 string city = command[1];
                                 string request = $"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={key}&units=metric";
 
@@ -104,11 +109,12 @@ namespace WeatherBotTelegramm
                                     
                                     await bot.SendTextMessageAsync(message.Chat.Id, $"Температура в {weatherResponse.Name} {weatherResponse.Main.Temp}С," +
                                         $"Давление {weatherResponse.Main.Pressure}мм,Ветер {weatherResponse.Wind.Speed}м/с");
-
+                                    
                                 }
                                 catch
                                 {
                                     Console.WriteLine("Error");
+                                    await bot.SendTextMessageAsync(message.Chat.Id, $"Ошибка запроса. Такого населенного пункта не существует");
                                 }
 
                                 break;
@@ -116,10 +122,54 @@ namespace WeatherBotTelegramm
                             case "/start":
                                 await bot.SendTextMessageAsync(message.Chat.Id, "Weather_bot предоставляет информацию о погоде. Команды:" +
                                     "Погода ГОРОД");
+
+                                break;
+
+                            case "Прогноз":
+
+                                 city = command[1];
+                                 request = $"http://api.openweathermap.org/data/2.5/forecast?q={city}&units=metric&appid={key}";
+
+                                 httpWebRequest = (HttpWebRequest)WebRequest.Create(request);
+
+                                try
+                                {
+                                    string response;
+                                    HttpWebResponse httpWebResponse = (HttpWebResponse)httpWebRequest.GetResponse();
+
+                                    using (StreamReader streamReader = new StreamReader(httpWebResponse.GetResponseStream()))
+                                    {
+                                        response = streamReader.ReadToEnd();
+                                    }
+                                    ///////////////
+                                   // WeatherResponse weatherResponse = JsonConvert.DeserializeObject<WeatherResponse>(response);
+
+                                    ForecastList forecastList= JsonConvert.DeserializeObject<ForecastList>(response);
+
+                                    foreach(var s in forecastList.List)
+                                    {
+                                        await bot.SendTextMessageAsync(message.Chat.Id,$"{s.dt_txt} Температура {s.Main.Temp}" +
+                                            $",давление {s.Main.Pressure},ветер {s.Wind.Speed}");
+                                    }
+
+                                    /*Console.WriteLine($"Температура в {weatherResponse.Name} {weatherResponse.Main.Temp}С," +
+                                        $"Давление {weatherResponse.Main.Pressure}мм,Ветер {weatherResponse.Wind.Speed}м/c");
+
+                                    await bot.SendTextMessageAsync(message.Chat.Id, $"Температура в {weatherResponse.Name} {weatherResponse.Main.Temp}С," +
+                                        $"Давление {weatherResponse.Main.Pressure}мм,Ветер {weatherResponse.Wind.Speed}м/с");*/
+
+                                }
+                                catch
+                                {
+                                    Console.WriteLine("Error");
+                                    await bot.SendTextMessageAsync(message.Chat.Id, $"Ошибка запроса. Такого населенного пункта не существует");
+                                }
+
                                 break;
 
                             default:
                                 await bot.SendTextMessageAsync(message.Chat.Id, $"Команда {command[0]} отсутствует.");
+                                
                                 break;
                         }
                         /*
@@ -177,6 +227,7 @@ namespace WeatherBotTelegramm
 
                                                 //break;*/
                         offset = update.Id + 1;
+
                     }
                 }
             }
@@ -187,21 +238,8 @@ namespace WeatherBotTelegramm
         }
     }
 
-    class TemperatureInfo
-    {
-        public float Temp { get; set; }
-        public int Pressure { get; set; }
-    }
-    class WindInfo
-    {
-        public float Speed { get; set; }
+    
 
-    }
 
-    class WeatherResponse
-    {
-        public TemperatureInfo Main { get; set; }
-        public string Name { get; set; }
-        public WindInfo Wind { get; set; }
-    }
+
 }
