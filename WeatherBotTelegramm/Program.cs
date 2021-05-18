@@ -13,24 +13,25 @@ namespace WeatherBotTelegramm
         private static bool flag_exit = true;
         static void Main(string[] args)
         {
-            
-            
-            Console.WriteLine(Environment.CurrentDirectory);
-            
+
+
+            Console.WriteLine("Старт");
+
             string jsonFile = "Api_key.json";
             string jsonFromFile;
-            
-            ApiKey key=new ApiKey();
+
+            ApiKey key = new ApiKey();
             try
             {
-                using(var reader=new StreamReader(jsonFile))
+                using (var reader = new StreamReader(jsonFile))
                 {
                     jsonFromFile = reader.ReadToEnd();
                 }
 
-                 key = JsonConvert.DeserializeObject<ApiKey>(jsonFromFile);
+                key = JsonConvert.DeserializeObject<ApiKey>(jsonFromFile);
+                Console.WriteLine("Файл Api_key прочитан");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine("Ошибка чтения файла json");
                 flag_exit = false;
@@ -42,16 +43,16 @@ namespace WeatherBotTelegramm
                 {
                     GetMessage(key.TOKEN, key.API_KEY).Wait();
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
-                    Console.WriteLine("Err:"+ex);
+                    Console.WriteLine("Err:" + ex);
                 }
             }
             Console.WriteLine("Выход");
-            
+
         }
 
-        static async Task GetMessage(string TOKEN,  string key)
+        static async Task GetMessage(string TOKEN, string key)
         {
             TelegramBotClient bot = new TelegramBotClient(TOKEN);
             int offset = 0;
@@ -63,75 +64,102 @@ namespace WeatherBotTelegramm
 
                 while (flag_exit)
                 {
-                    var updates = await bot.GetUpdatesAsync(offset, timeout); 
+                    var updates = await bot.GetUpdatesAsync(offset, timeout);
                     foreach (var update in updates)
                     {
+                        string[] command = { };
                         var message = update.Message;
-                        string[] command = message.Text.Split(" ");
-
-                        string city = " ";
                         try
                         {
-                            city = command[1];
-                        }
-                        catch (Exception ex)
-                        {
-                           switch(command[0])
+                            command = filterMessage(message.Text);
+
+                            if (command != null)
                             {
-                                case "/start":
-                                    await bot.SendTextMessageAsync(message.Chat.Id, "Weather_bot предоставляет информацию о погоде. Команды:" +
-                                        "Погода ГОРОД");
-                                    break;
-                            }
-                        }
-
-                        switch (command[0])
-                        {
-                            case "Погода":
-
-                                OpenWeatherAPI openWeatherAPI = new OpenWeatherAPI(key);
-
-                                WeatherResponse weatherResponse = openWeatherAPI.Weather(command[1]);
-                                if(weatherResponse!=null)
+                                if (command.Length == 1)
                                 {
-                                    await bot.SendTextMessageAsync(message.Chat.Id, $"Температура:{weatherResponse.Main.Temp}\n" +
-                                        $"Давление:{weatherResponse.Main.Pressure}mm\n" +
-                                        $"Ветер:{weatherResponse.Wind.Speed}м/c");
+                                    switch (command[0])
+                                    {
+                                        case "/start":
+                                            await bot.SendTextMessageAsync(message.Chat.Id, "Weather_bot предоставляет информацию о погоде. Команды:\n" +
+                                                "-Погода ГОРОД\n" +
+                                                "-Прогноз ГОРОД\n");
+                                            break;
+
+
+                                        default:
+                                            await bot.SendTextMessageAsync(message.Chat.Id, $"Команда {command[0]} отсутствует.");
+
+                                            break;
+                                    }
                                 }
                                 else
                                 {
-                                    await bot.SendTextMessageAsync(message.Chat.Id, $"Ошибка запроса");
-                                }
-                                    
-                                
-                                break;
 
-
-                            case "Прогноз":
-
-                                 openWeatherAPI = new OpenWeatherAPI(key);
-
-                                ForecastList forecastList = openWeatherAPI.forecastList(command[1]);
-                                if (forecastList != null)
-                                {
-                                    foreach(var s in forecastList.List)
+                                    try
                                     {
-                                        await bot.SendTextMessageAsync(message.Chat.Id, $"{s.dt_txt} Температура {s.Main.Temp}" +
-                                            $",давление {s.Main.Pressure},ветер {s.Wind.Speed}");
+                                        string city = command[1];
+
+                                        switch (command[0])
+                                        {
+                                            case "Погода":
+
+                                                OpenWeatherAPI openWeatherAPI = new OpenWeatherAPI(key);
+
+                                                WeatherResponse weatherResponse = openWeatherAPI.Weather(command[1]);
+                                                if (weatherResponse != null)
+                                                {
+                                                    await bot.SendTextMessageAsync(message.Chat.Id, $"Температура:{weatherResponse.Main.Temp}\n" +
+                                                        $"Давление:{weatherResponse.Main.Pressure}mm\n" +
+                                                        $"Ветер:{weatherResponse.Wind.Speed}м/c");
+                                                }
+                                                else
+                                                {
+                                                    await bot.SendTextMessageAsync(message.Chat.Id, $"Ошибка запроса");
+                                                }
+
+                                                break;
+
+                                            case "Прогноз":
+
+                                                openWeatherAPI = new OpenWeatherAPI(key);
+
+                                                ForecastList forecastList = openWeatherAPI.forecastList(command[1]);
+                                                if (forecastList != null)
+                                                {
+                                                    foreach (var s in forecastList.List)
+                                                    {
+                                                        await bot.SendTextMessageAsync(message.Chat.Id, $"{s.dt_txt} Температура {s.Main.Temp}" +
+                                                            $",давление {s.Main.Pressure},ветер {s.Wind.Speed}");
+                                                    }
+
+                                                }
+                                                else
+                                                {
+                                                    await bot.SendTextMessageAsync(message.Chat.Id, $"Ошибка запроса");
+                                                }
+
+                                                break;
+
+                                            default:
+                                                await bot.SendTextMessageAsync(message.Chat.Id, $"Команда {command[0]} отсутствует.");
+
+                                                break;
+
+                                        }
+
+                                    }
+                                    catch (Exception ex)
+                                    {
+
+                                        await bot.SendTextMessageAsync(message.Chat.Id, $"Ошибка обработки команды");
                                     }
 
                                 }
-                                else
-                                {
-                                    await bot.SendTextMessageAsync(message.Chat.Id, $"Ошибка запроса");
-                                }
-
-                                break;
-
-                            default:
-                                await bot.SendTextMessageAsync(message.Chat.Id, $"Команда {command[0]} отсутствует.");
-                                
-                                break;
+                            }
+                        }
+                        catch
+                        {
+                            Console.WriteLine("Ошибка фильтра");
                         }
 
                         offset = update.Id + 1;
@@ -144,9 +172,31 @@ namespace WeatherBotTelegramm
                 Console.WriteLine("Err:" + ex);
             }
         }
+
+        static string[] filterMessage(string message)
+        {
+            string[] strMsg;
+            try
+            {
+                strMsg = message.Split(" ");
+
+                if (strMsg.Length > 2)
+                {
+                    strMsg = null;
+                    return strMsg;
+                }
+
+            }
+            catch
+            {
+                strMsg = null;
+            }
+            return strMsg;
+
+        }
     }
 
-    
+
 
 
 
