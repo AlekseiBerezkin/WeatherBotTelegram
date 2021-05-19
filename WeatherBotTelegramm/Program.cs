@@ -113,8 +113,6 @@ namespace WeatherBotTelegramm
                                                 WeatherResponse weatherResponse = openWeatherAPI.Weather(command[1]);
                                                 if (weatherResponse != null)
                                                 {
-                                                    
-                                                    
                                                     await bot.SendTextMessageAsync(message.Chat.Id, $"Температура:{weatherResponse.Main.Temp}\n" +
                                                         $"Давление:{weatherResponse.Main.Pressure}mm\n" +
                                                         $"Ветер:{weatherResponse.Wind.Speed}м/c\n" +
@@ -142,6 +140,7 @@ namespace WeatherBotTelegramm
                                                             $"Давление:{s.Main.Pressure}кПа,\n" +
                                                             $"Ветер:{s.Wind.Speed}м/c\n" +
                                                             $"Влажность:{s.Main.humidity}%");
+                                                        await bot.SendStickerAsync(message.Chat.Id, StickerWeather.GetSticker(s.Weather[0].icon));
                                                     }
 
                                                 }

@@ -26,7 +26,7 @@ namespace WeatherBotTelegramm.Sticker
                     return "CAACAgIAAxkBAAECUSBgpLck1DczjnZ5NQ8f0r7tatjdHgACSwQAAtJaiAFXp6lBpcqOEx8E";
                  
                 case "10d":
-                    return "AACAgIAAxkBAAECUSRgpLdN1LtJ1o7nPcRQ_dQaz4h0IQACXQEAAqZESAvs_oFvEWLK4R8E";
+                    return "CAACAgIAAxkBAAECUb9gpQfsixk4eN591FDofcbA-8WIWQACRQQAAtJaiAEis8p14b-KMx8E";
                    
                 case "11d":
                     return "CAACAgIAAxkBAAECUSZgpLduhtl2vtp6q2-xbzIH_PmDhgACLAEAAqZESAs1JufkLCR1wx8E";
@@ -52,7 +52,7 @@ namespace WeatherBotTelegramm.Sticker
                     return "CAACAgIAAxkBAAECUSBgpLck1DczjnZ5NQ8f0r7tatjdHgACSwQAAtJaiAFXp6lBpcqOEx8E";
 
                 case "10n":
-                    return "AACAgIAAxkBAAECUSRgpLdN1LtJ1o7nPcRQ_dQaz4h0IQACXQEAAqZESAvs_oFvEWLK4R8E";
+                    return "CAACAgIAAxkBAAECUb9gpQfsixk4eN591FDofcbA-8WIWQACRQQAAtJaiAEis8p14b-KMx8E";
 
                 case "11n":
                     return "CAACAgIAAxkBAAECUSZgpLduhtl2vtp6q2-xbzIH_PmDhgACLAEAAqZESAs1JufkLCR1wx8E";
