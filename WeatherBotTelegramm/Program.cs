@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Telegram.Bot;
 using WeatherBotTelegramm.Forecast;
+using WeatherBotTelegramm.Sticker;
 
 namespace WeatherBotTelegramm
 {
@@ -57,7 +58,7 @@ namespace WeatherBotTelegramm
             TelegramBotClient bot = new TelegramBotClient(TOKEN);
             int offset = 0;
             int timeout = 0;
-
+            Console.WriteLine("Старт получения сообщений");
             try
             {
                 await bot.SetWebhookAsync("");
@@ -72,7 +73,7 @@ namespace WeatherBotTelegramm
                         try
                         {
                             command = filterMessage(message.Text);
-
+                            Console.WriteLine($"Получено сообщение от "+message.From.FirstName+" "+message.From.LastName+":"+ message.Text);
                             if (command != null)
                             {
                                 if (command.Length == 1)
@@ -80,6 +81,10 @@ namespace WeatherBotTelegramm
                                     switch (command[0])
                                     {
                                         case "/start":
+                                            await bot.SendTextMessageAsync(message.Chat.Id, "Вас приветствует MyBotWeather. Моя цель оповещать тебя о погоде по быстрому набору команд" +
+                                                "для получения доступных команд набери /help");
+                                            break;
+                                        case "/help":
                                             await bot.SendTextMessageAsync(message.Chat.Id, "Weather_bot предоставляет информацию о погоде. Команды:\n" +
                                                 "-Погода ГОРОД\n" +
                                                 "-Прогноз ГОРОД\n");
@@ -108,9 +113,13 @@ namespace WeatherBotTelegramm
                                                 WeatherResponse weatherResponse = openWeatherAPI.Weather(command[1]);
                                                 if (weatherResponse != null)
                                                 {
+                                                    
+                                                    
                                                     await bot.SendTextMessageAsync(message.Chat.Id, $"Температура:{weatherResponse.Main.Temp}\n" +
                                                         $"Давление:{weatherResponse.Main.Pressure}mm\n" +
-                                                        $"Ветер:{weatherResponse.Wind.Speed}м/c");
+                                                        $"Ветер:{weatherResponse.Wind.Speed}м/c\n" +
+                                                        $"Влажность:{weatherResponse.Main.humidity}%");
+                                                    await bot.SendStickerAsync(message.Chat.Id, StickerWeather.GetSticker(weatherResponse.Weather[0].icon));
                                                 }
                                                 else
                                                 {
@@ -128,8 +137,11 @@ namespace WeatherBotTelegramm
                                                 {
                                                     foreach (var s in forecastList.List)
                                                     {
-                                                        await bot.SendTextMessageAsync(message.Chat.Id, $"{s.dt_txt} Температура {s.Main.Temp}" +
-                                                            $",давление {s.Main.Pressure},ветер {s.Wind.Speed}");
+                                                        await bot.SendTextMessageAsync(message.Chat.Id, $"{s.dt_txt}\n" +
+                                                            $"Температура:{s.Main.Temp},\n" +
+                                                            $"Давление:{s.Main.Pressure}кПа,\n" +
+                                                            $"Ветер:{s.Wind.Speed}м/c\n" +
+                                                            $"Влажность:{s.Main.humidity}%");
                                                     }
 
                                                 }

@@ -10,5 +10,6 @@ namespace WeatherBotTelegramm
         public TemperatureInfo Main { get; set; }
         public string Name { get; set; }
         public WindInfo Wind { get; set; }
+        public List<WeatherDesc> Weather { get; set; }
     }
 }
