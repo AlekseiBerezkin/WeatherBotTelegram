@@ -10,5 +10,4 @@ Pet-проект написанный с целью закрепления из�
 
 Примеры работы:
 
-<img src="https://user-images.githubusercontent.com/65042812/121181329-8d70ca80-c86a-11eb-9514-e66e859a48ea.jpg" width="300" />
-<img src="https://user-images.githubusercontent.com/65042812/121181849-1ee03c80-c86b-11eb-96bc-1d2aa2c344e3.jpg" width="300" />
+<img src="https://user-images.githubusercontent.com/65042812/121181329-8d70ca80-c86a-11eb-9514-e66e859a48ea.jpg" width="300" /><img src="https://user-images.githubusercontent.com/65042812/121181849-1ee03c80-c86b-11eb-96bc-1d2aa2c344e3.jpg" width="300" />
